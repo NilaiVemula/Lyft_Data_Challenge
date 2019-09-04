@@ -1,0 +1,47 @@
+---
+title: "10_Importing_Data"
+output: html_notebook
+---
+
+# Import Libraries
+`tidyverse` is a collection of packages for R designed with a consistent methodology.
+
+```{r setup}
+require(tidyverse)
+```
+
+# Import Dataset
+`readr` is used to import the datasets. Take note of the datetime format and the factor levels for events
+```{r import data files}
+driver_ids <- read_csv("data/driver_ids.csv", 
+    col_types = cols(driver_onboard_date = col_datetime(format = "%Y-%m-%d %H:%M:%S")))
+
+ride_ids <- read_csv("data/ride_ids.csv", 
+    col_types = cols(driver_id = col_character(), 
+        ride_distance = col_double(), ride_duration = col_double(), 
+        ride_id = col_character(), ride_prime_time = col_double()))
+
+ride_timestamps <- read_csv("data/ride_timestamps.csv", 
+    col_types = cols(event = col_factor(levels = c("requested_at", 
+        "accepted_at", "arrived_at", "picked_up_at", 
+        "dropped_off_at")), ride_id = col_character(), 
+        timestamp = col_datetime(format = "%Y-%m-%d %H:%M:%S")))
+```
+
+# Preview Data
+```{r}
+driver_ids
+```
+
+There are 937 drivers.
+
+```{r}
+ride_ids
+```
+
+There are 193,502 rides.
+
+```{r}
+ride_timestamps
+```
+
