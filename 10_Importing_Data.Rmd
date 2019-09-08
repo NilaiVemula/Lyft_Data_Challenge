@@ -44,26 +44,22 @@ There are 193,502 rides.
 ```{r}
 ride_timestamps
 ```
+
+```{r}
+ride_timestamps %>% filter(is.na(timestamp))
+```
+
+
 ```{r}
 library(lubridate)
 last_timestamp <- ride_timestamps %>% drop_na()
-a <- (max(last_timestamp$timestamp))
-a
+last_recorded_timestamp <- (max(last_timestamp$timestamp))
+last_recorded_timestamp
+
+first_recorded_timestamp <- (min(last_timestamp$timestamp))
+first_recorded_timestamp
 ```
 
-```{r}
-sorted_driver <- arrange(driver_ids,driver_onboard_date)
-sorted_driver
-```
-
-Driver onboard date ranges from 3/28/2016 to 5/15/2016
-
-```{r}
-sorted_ride_timestamps <- arrange(ride_timestamps, desc(timestamp))
-sorted_ride_timestamps
-```
-
-Timestamps range from 3/28/2016 to 6/27/2016.
 
 ```{r}
 rides <- left_join(ride_ids,ride_timestamps,by="ride_id")
@@ -71,30 +67,34 @@ rides
 ```
 
 ```{r}
+rides %>% filter(is.na(timestamp)) %>% select(driver_id) %>% distinct()
+```
+
+
+# Combine Data into full dataset
+```{r}
 full <- left_join(rides,driver_ids,by="driver_id")
 full
 ```
 
-```{r}
-latest_time <- filter(full, event == "dropped_off_at")
-latest_time
-```
 
 ```{r}
-deltas <- latest_time %>% mutate(time_from_employment_to_current_ride = timestamp-driver_onboard_date)
-deltas
+full %>% filter(is.na(timestamp))
 ```
 
+
+
 ```{r}
-driver_lengths <- select(deltas, driver_id, time_from_employment_to_current_ride, time_of_current_ride=timestamp )
+driver_lengths <- full %>% filter(event == "dropped_off_at") %>% mutate(time_from_employment_to_current_ride = timestamp-driver_onboard_date) %>% select(driver_id, time_from_employment_to_current_ride, time_of_current_ride=timestamp )
 driver_lengths
 ```
+
 
 ```{r}
 driver_time_distributions <- driver_lengths %>% 
   drop_na() %>% 
   group_by(driver_id) %>%
-  arrange(driver_id,time)
+  arrange(driver_id,time_from_employment_to_current_ride)
 driver_time_distributions
 ```
 
@@ -106,7 +106,7 @@ first_driver <- driver_lengths %>%
   arrange(time_of_current_ride) %>% 
   filter(driver_id == "002be0ffdc997bd5c50703158b7c2491") %>% 
   select(time_from_employment_to_current_ride) %>% 
-  mutate_all(funs(. - lag(.))) %>% 
+  mutate_all(funs(. - lag(.))) %>% # subtract by previous value to get time between rides
   na.omit() %>% 
   select(time_between_rides = time_from_employment_to_current_ride)
 
@@ -123,7 +123,7 @@ first_driver %>% ggplot(aes(time_between_rides)) +
 
 ```{r}
 
-time_between_sessions_set <- driver_lengths %>%
+significant_time_between_sessions_set <- driver_lengths %>%
   drop_na() %>% 
   group_by(driver_id) %>% 
   arrange(driver_id,time_from_employment_to_current_ride) %>% 
@@ -139,7 +139,7 @@ time_between_sessions_set <- driver_lengths %>%
   mutate(mean = mean(time_between_sessions)) %>% 
   mutate(sd = sd(time_between_sessions)) %>% 
   mutate(size = n()) %>%
-  filter(last_break>mean+2*sd)
+  filter(last_break>mean+2*sd) #only chose significant breaks
 # %>% 
   # select(driver_id) %>% 
   # distinct(driver_id)
@@ -151,9 +151,14 @@ time_between_sessions_set <- driver_lengths %>%
 
 
   
-time_between_sessions_set
+significant_time_between_sessions_set
 
 ```
+
+```{r}
+list_of_quitters <- significant_time_between_sessions_set %>% select(driver_id) %>% distinct()
+```
+
 
 ```{r}
 career_length_so_far <- driver_lengths %>% drop_na() %>% 
@@ -172,16 +177,17 @@ p
 ```
 
 ```{r}
-quitters <- left_join(time_between_sessions_set,career_length_so_far)
+quitter_career_lengths <- left_join(list_of_quitters,career_length_so_far)
+quitter_career_lengths
 
-quitters_plot<- quitters %>% 
+quitters_plot<- quitter_career_lengths %>% 
   ggplot(aes(length)) +
   geom_histogram(binwidth=10080)
 quitters_plot
 ```
 
 ```{r}
-quit_avg <- quitters %>% ungroup() %>% summarise(mean(length))
+quit_avg <- quitter_career_lengths %>% ungroup() %>% summarise(mean(length))
 quit_avg
 ```
 
