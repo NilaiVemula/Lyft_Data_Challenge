@@ -1,0 +1,190 @@
+---
+title: "40_Driver_Classification"
+output: html_notebook
+---
+# Import Data
+```{r setup}
+library(tidyverse)
+
+driver_attributes <- read_csv("data/driver_attributes_complete.csv")
+
+driver_attributes
+```
+
+
+ 
+# Principle Component Analysis 
+
+
+```{r}
+
+driver_attributes <- driver_attributes %>% remove_rownames %>% column_to_rownames(var="driver_id") %>% select(-quit_within_90_days)
+
+library("factoextra")
+library("FactoMineR")
+driver.pca <- PCA(driver_attributes, graph = FALSE)
+
+```
+
+```{r}
+print(driver.pca)
+```
+
+## Scree plot
+
+```{r}
+eigenvalues <- driver.pca$eig
+head(eigenvalues[, 1:2])
+fviz_screeplot(driver.pca, ncp=10)
+```
+
+## Plot the correlations/loadings of the variables with the components
+
+```{r}
+head(driver.pca$var$coord)
+
+fviz_pca_var(driver.pca)
+
+```
+
+```{r}
+fviz_pca_contrib(driver.pca, choice = "var", axes = 1)
+fviz_pca_contrib(driver.pca, choice = "var", axes = 2)
+fviz_pca_contrib(driver.pca, choice = "var", axes = 1:2)
+```
+
+```{r}
+fviz_pca_var(driver.pca, col.var="contrib")
+```
+
+```{r}
+fviz_pca_ind(driver.pca, label="none")
+```
+
+# mixed clustering
+```{r}
+library(Rtsne) # for t-SNE plot
+library(ggplot2) # for visualization
+
+set.seed(1680) # for reproducibility
+
+```
+
+```{r}
+driver_attributes <- read_csv("data/driver_attributes_complete.csv")
+
+driver_attributes <- driver_attributes %>% remove_rownames %>% column_to_rownames(var="driver_id")
+```
+
+
+```{r}
+gower_dist <- daisy(driver_attributes,
+                    metric = "gower",
+                    type = list(logratio = 3))
+```
+
+```{r}
+summary(gower_dist)
+```
+
+```{r}
+gower_mat <- as.matrix(gower_dist)
+
+#most similar pair
+driver_attributes[
+  which(gower_mat == min(gower_mat[gower_mat != min(gower_mat)]),
+        arr.ind = TRUE)[1, ], ]
+
+#most dissimilar pair
+driver_attributes[
+  which(gower_mat == max(gower_mat[gower_mat != max(gower_mat)]),
+        arr.ind = TRUE)[1, ], ]
+```
+
+```{r}
+# Calculate silhouette width for many k using PAM
+
+sil_width <- c(NA)
+
+for(i in 2:10){
+  
+  pam_fit <- pam(gower_dist,
+                 diss = TRUE,
+                 k = i)
+  
+  sil_width[i] <- pam_fit$silinfo$avg.width
+  
+}
+
+# Plot sihouette width (higher is better)
+
+plot(1:10, sil_width,
+     xlab = "Number of clusters",
+     ylab = "Silhouette Width")
+lines(1:10, sil_width)
+```
+
+plot peaks at 2, so 2 clusters
+
+```{r}
+pam_fit <- pam(gower_dist, diss = TRUE, k = 2)
+
+pam_results <- driver_attributes %>%
+  mutate(cluster = pam_fit$clustering) %>%
+  group_by(cluster) %>%
+  do(the_summary = summary(.))
+
+pam_results$the_summary
+```
+
+these are the most representative samples of their clusters:
+```{r}
+driver_attributes[pam_fit$medoids, ]
+```
+
+```{r}
+tsne_obj <- Rtsne(gower_dist, is_distance = TRUE)
+
+tsne_data <- tsne_obj$Y %>%
+  data.frame() %>%
+  setNames(c("X", "Y")) %>%
+  mutate(cluster = factor(pam_fit$clustering))
+
+ggplot(aes(x = X, y = Y), data = tsne_data) +
+  geom_point(aes(color = cluster))
+```
+
+this makes it look like there should be four clusters
+
+now i will re run with four clusters
+
+
+```{r}
+pam_fit_4 <- pam(gower_dist, diss = TRUE, k = 4)
+
+pam_results_4 <- driver_attributes %>%
+  mutate(cluster = pam_fit_4$clustering) %>%
+  group_by(cluster) %>%
+  do(the_summary = summary(.))
+
+pam_results_4$the_summary
+```
+
+
+these are the most representative samples of their clusters:
+```{r}
+driver_attributes[pam_fit_4$medoids, ]
+```
+
+```{r}
+tsne_obj <- Rtsne(gower_dist, is_distance = TRUE)
+
+tsne_data <- tsne_obj$Y %>%
+  data.frame() %>%
+  setNames(c("X", "Y")) %>%
+  mutate(cluster = factor(pam_fit_4$clustering))
+
+ggplot(aes(x = X, y = Y), data = tsne_data) +
+  geom_point(aes(color = cluster))
+```
+
