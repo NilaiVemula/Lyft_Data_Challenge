@@ -1,0 +1,118 @@
+---
+title: "30_Driver_Attributes"
+output: html_notebook
+---
+
+#Import full data
+```{r import}
+library(tidyverse)
+library(scales)
+
+full <- read_csv("data/full.csv", col_types = cols(timestamp = col_datetime(format = "%Y-%m-%d%.%H:%M:%S%.")))
+full
+
+driver_attributes <- read_csv("data/driver_attributes.csv")
+driver_attributes
+```
+
+# Creating Attributes
+
+## Average Earnings per ride
+```{r}
+average_earnings <- full %>% 
+  group_by(driver_id) %>% 
+  select(driver_id, ride_id,driver_earnings) %>% 
+  distinct() %>% 
+  summarise(average_earnings_per_ride = mean(driver_earnings)) %>% 
+  ungroup()
+
+average_earnings
+
+driver_attributes <- full_join(driver_attributes, average_earnings)
+driver_attributes
+  
+```
+
+## Number of rides
+```{r}
+number_of_rides <- full %>% 
+  group_by(driver_id) %>% 
+  select(driver_id, ride_id) %>% 
+  distinct() %>% 
+  summarise(number_of_rides_given = n()) %>% 
+  ungroup()
+
+number_of_rides
+
+driver_attributes <- full_join(driver_attributes, number_of_rides)
+driver_attributes
+```
+## Eagerness
+Eagerness is inversely proportional to the time difference between then a ride is requested and when the driver accepts the ride
+
+```{r}
+
+eagerness <- full %>% 
+  filter(event == "requested_at" | event == "accepted_at") %>% 
+  group_by(ride_id) %>% 
+  mutate(eagerness = (as.numeric(last(timestamp)-first(timestamp)))) %>% 
+  ungroup() %>% 
+  select(driver_id,ride_id,eagerness) %>% 
+  distinct() %>% 
+  group_by(driver_id) %>% 
+  summarise(average_eagerness = mean(eagerness)) %>% 
+  ungroup() %>% 
+  mutate(scaled_average_eagerness = scales::rescale(average_eagerness,to=c(1,0))) %>% #inverse scaling
+  select(driver_id,scaled_average_eagerness)
+  
+eagerness
+
+driver_attributes <- full_join(driver_attributes, eagerness)
+driver_attributes
+```
+
+## Response Time
+
+Response time ranking is inversely related to time difference between a driver accepting a ride and arriving at the pickup location. This indicates the ability of a driver to choose routes where he/she does not have to drive far to get the ride.
+
+```{r}
+library(scales)
+response_time <- full %>% 
+  filter(event == "accepted_at" | event == "arrived_at") %>% 
+  group_by(ride_id) %>% 
+  mutate(response_time = (as.numeric(last(timestamp)-first(timestamp)))) %>% 
+  ungroup() %>% 
+  select(driver_id,ride_id,response_time) %>% 
+  distinct() %>% 
+  group_by(driver_id) %>% 
+  summarise(average_response_time = mean(response_time)) %>% 
+  ungroup() %>% 
+  mutate(scaled_average_response_time_ranking = scales::rescale(average_response_time,to=c(1,0))) %>% #inverse scaling
+  select(driver_id,scaled_average_response_time_ranking)
+  
+response_time
+
+driver_attributes <- full_join(driver_attributes, response_time)
+driver_attributes
+```
+
+## Average Prime time weighted by ride duration
+
+```{r}
+average_prime <- full %>% 
+  group_by(driver_id) %>% 
+  select(driver_id, ride_id, ride_duration, ride_prime_time) %>% 
+  distinct() %>% 
+  summarise(average_prime_time_weighted_by_ride_duration = weighted.mean(ride_prime_time,ride_duration)) %>% 
+  select(driver_id,average_prime_time_weighted_by_ride_duration)
+
+average_prime
+
+driver_attributes <- full_join(driver_attributes, average_prime)
+```
+
+# Export driver attributes
+```{r}
+write_csv(driver_attributes, path = "data/driver_attributes_complete.csv")
+```
+
