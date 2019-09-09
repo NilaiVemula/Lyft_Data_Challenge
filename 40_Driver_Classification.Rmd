@@ -62,7 +62,8 @@ fviz_pca_ind(driver.pca, label="none")
 ```
 
 # mixed clustering
-```{r}
+Based off of: https://www.r-bloggers.com/clustering-mixed-data-types-in-r/
+```{r setup2}
 library(Rtsne) # for t-SNE plot
 library(ggplot2) # for visualization
 
@@ -124,7 +125,7 @@ plot(1:10, sil_width,
 lines(1:10, sil_width)
 ```
 
-plot peaks at 2, so 2 clusters
+plot peaks at 2, so 2 clusters are recommended
 
 ```{r}
 pam_fit <- pam(gower_dist, diss = TRUE, k = 2)
@@ -136,6 +137,8 @@ pam_results <- driver_attributes %>%
 
 pam_results$the_summary
 ```
+descriptive statistics for each cluster ^
+
 
 these are the most representative samples of their clusters:
 ```{r}
@@ -169,12 +172,14 @@ pam_results_4 <- driver_attributes %>%
 
 pam_results_4$the_summary
 ```
-
+descriptive statistics for each cluster ^
 
 these are the most representative samples of their clusters:
 ```{r}
 driver_attributes[pam_fit_4$medoids, ]
 ```
+
+looks like quit status and number of rides given are two major drivers of clustering
 
 ```{r}
 tsne_obj <- Rtsne(gower_dist, is_distance = TRUE)
@@ -188,3 +193,4 @@ ggplot(aes(x = X, y = Y), data = tsne_data) +
   geom_point(aes(color = cluster))
 ```
 
+looks like four clusters with a bit of messiness between cluster 1 and 2
