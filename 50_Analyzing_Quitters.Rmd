@@ -1,0 +1,36 @@
+---
+title: "50_Analyzing_Quitters"
+output: html_notebook
+---
+We can analyze quitters using the attributes we established before.
+Lifetime value can be calculated because we know how long these drivers drove for, so we know their entire lifetime.
+
+# Import Libraries
+```{r}
+require(tidyverse)
+```
+
+# Import Data
+```{r}
+full <- read_csv("data/full.csv", col_types = cols(timestamp = col_datetime(format = "%Y-%m-%d%.%H:%M:%S%.")))
+full
+
+driver_attributes <- read_csv("data/driver_attributes_complete.csv")
+driver_attributes
+```
+
+```{r}
+quitter_attributes <- driver_attributes %>% 
+  filter(quit_within_90_days == T) %>% 
+  select(-quit_within_90_days) %>% 
+  mutate(lifetime_earnings = number_of_rides_given * average_earnings_per_ride) %>% 
+  
+quitter_attributes
+```
+
+```{r}
+average_quitter_earnings <- quitter_attributes %>% 
+  summarise(mean(lifetime_earnings))
+average_quitter_earnings
+```
+
