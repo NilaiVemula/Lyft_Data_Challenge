@@ -43,13 +43,14 @@ first_driver %>% ggplot(aes(time_between_rides)) +
 
 
 ```
-5 hour cut off
+6 hour cut off
+https://help.lyft.com/hc/en-us/articles/115012926787-Taking-breaks-and-time-limits-in-driver-mode
 
 
 ```{r}
 driver_lengths %>% select(driver_id) %>% distinct() %>% dim
 ```
-
+There are 837 drivers that we are analyzing.
 
 ```{r}
 
@@ -65,7 +66,7 @@ significant_time_between_sessions_set <- driver_lengths %>%
   
   dplyr::mutate(last_break = last_recorded_timestamp - dplyr::first(last_event_time_for_ride)) %>% 
   
-  filter(time_between_sessions>300) %>% #only looking at breaks longer than 5 hours
+  filter(time_between_sessions>360) %>% #only looking at breaks longer than 6 hours
   mutate(mean = mean(time_between_sessions)) %>% 
   mutate(sd = sd(time_between_sessions)) %>% 
   mutate(size = n()) %>%
@@ -143,6 +144,13 @@ driver_attributes <- list_of_all_drivers %>% mutate(quit_within_90_days = ifelse
 ```
 
 ```{r}
+driver_attributes
+
+```
+
+```{r}
+driver_attributes <- full_join(quitter_career_lengths,driver_attributes,by="driver_id") %>% 
+  rename (career_length_in_days = 2)
 driver_attributes
 write_csv(driver_attributes,"data/driver_attributes.csv")
 ```

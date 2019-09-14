@@ -33,6 +33,40 @@ driver_attributes
   
 ```
 
+## Average Ride Duration
+
+```{r}
+average_duration <- full %>% 
+  group_by(driver_id) %>% 
+  select(driver_id, ride_id,ride_duration) %>% 
+  distinct() %>% 
+  summarise(average_ride_duration = mean(ride_duration)) %>% 
+  ungroup()
+
+average_duration
+
+driver_attributes <- full_join(driver_attributes, average_duration)
+driver_attributes
+  
+```
+
+## Average Ride Distance
+
+```{r}
+average_distance <- full %>% 
+  group_by(driver_id) %>% 
+  select(driver_id, ride_id,ride_distance) %>% 
+  distinct() %>% 
+  summarise(average_ride_distance = mean(ride_distance)) %>% 
+  ungroup()
+
+average_distance
+
+driver_attributes <- full_join(driver_attributes, average_distance)
+driver_attributes
+  
+```
+
 ## Number of rides
 ```{r}
 number_of_rides <- full %>% 
@@ -109,10 +143,38 @@ average_prime <- full %>%
 average_prime
 
 driver_attributes <- full_join(driver_attributes, average_prime)
+driver_attributes
 ```
 
 # Export driver attributes
 ```{r}
 write_csv(driver_attributes, path = "data/driver_attributes_complete.csv")
 ```
+
+
+# Descriptive Statistics
+
+```{r}
+driver_attributes %>% 
+  summarise(mean(average_earnings_per_ride))
+
+driver_attributes %>% 
+  summarise(mean(average_ride_distance))
+
+driver_attributes %>% 
+  summarise(mean(average_ride_duration))
+
+driver_attributes %>% 
+  summarise(mean(scaled_average_eagerness))
+
+driver_attributes %>% 
+  summarise(mean(scaled_average_response_time_ranking))
+
+driver_attributes %>% 
+  summarise(mean(number_of_rides_given))
+
+driver_attributes %>% 
+  summarise(mean(average_prime_time_weighted_by_ride_duration))
+```
+
 
