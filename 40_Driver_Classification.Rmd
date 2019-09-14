@@ -66,6 +66,7 @@ Based off of: https://www.r-bloggers.com/clustering-mixed-data-types-in-r/
 ```{r setup2}
 library(Rtsne) # for t-SNE plot
 library(ggplot2) # for visualization
+library(cluster)
 
 set.seed(1680) # for reproducibility
 
@@ -74,7 +75,9 @@ set.seed(1680) # for reproducibility
 ```{r}
 driver_attributes <- read_csv("data/driver_attributes_complete.csv")
 
-driver_attributes <- driver_attributes %>% remove_rownames %>% column_to_rownames(var="driver_id")
+driver_attributes <- driver_attributes %>% select(-career_length_in_days) %>% select(-average_ride_duration) %>% select(-average_ride_distance) %>% remove_rownames %>% column_to_rownames(var="driver_id")
+
+driver_attributes
 ```
 
 
@@ -193,4 +196,5 @@ ggplot(aes(x = X, y = Y), data = tsne_data) +
   geom_point(aes(color = cluster))
 ```
 
-looks like four clusters with a bit of messiness between cluster 1 and 2
+looks like four clusters with a bit of messiness between cluster 3 and 4
+
