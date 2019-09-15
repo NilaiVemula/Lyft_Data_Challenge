@@ -41,7 +41,8 @@ first_driver %>% ggplot(aes(time_between_rides/(60*24))) +
   theme_minimal() +
   geom_vline(aes(xintercept=(6/24), color="red"),
              linetype="dashed") +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  annotate("text", x = 0.63, y = 11, label = "6 hours", size = 3)
   
 ggsave(filename = "plots/first_driver_density.png", dpi = 400, width = 7.5, height = 4)
 
@@ -113,6 +114,11 @@ career_length_so_far <- driver_lengths %>%
   
 career_length_so_far
 ```
+
+```{r}
+write_csv(career_length_so_far, path = "data/career_length_so_far.csv")
+```
+
 
 ```{r}
 list_of_all_drivers <- career_length_so_far %>% select(driver_id) %>% distinct()

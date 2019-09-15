@@ -1,6 +1,8 @@
 ---
 title: "10_Importing_Data"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 # Import Libraries

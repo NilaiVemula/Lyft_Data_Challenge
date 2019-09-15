@@ -58,7 +58,10 @@ quitter_attributes %>%
 # Analyze Quitter Cluster
 
 ```{r}
-cluster_assignments <- read_csv(file = "data/cluster_assignments.csv")
+require(readr)
+cluster_assignments <- read_csv("data/cluster_assignments.csv", 
+    col_types = cols(cluster = col_factor(levels = c("1", 
+        "2", "3", "4"))))
 quitter_attributes <- left_join(quitter_attributes,cluster_assignments,by="driver_id")
 
 quitter_attributes
@@ -84,7 +87,29 @@ quitter_attributes %>%
     
     `Career Length (days)` = round(mean(career_length_in_days), 2),
     
-    `Size`= n()
+    `Size`= n(),
+    
+    `Number of Days Worked` = round(mean(number_of_days_worked),2),
+    
+    `Average Number of Rides Per Day Worked` = round(mean(rides_per_day_worked))
   )
+```
+
+```{r}
+
+quitter_attributes %>% 
+  group_by(cluster) %>%
+  ggplot(mapping = aes(x = career_length_in_days, y = number_of_rides_given, color = cluster)) +
+  geom_point() +
+  scale_color_manual(name="Cluster",
+                         breaks=c("1", "2"),
+                         labels=c("1: High-volume Quitters", "2: Low-volume Quitters"),
+                     values = c("#00BFC4","#C77CFF")) +
+  geom_hline(yintercept = 43, color="red",
+             linetype="dashed") +
+
+  labs(title = "Number of Rides Given v. Career Length for Quitters", x = "Career Length (days)", y = "Number of Rides Given") +
+  theme_minimal()
+ggsave(filename = "plots/num_rides_vs_quitter_career_length.png", dpi = 400, width = 7.5, height = 4)
 ```
 

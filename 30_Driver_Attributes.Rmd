@@ -15,6 +15,7 @@ driver_attributes <- read_csv("data/driver_attributes.csv")
 driver_attributes
 ```
 
+
 # Creating Attributes
 
 ## Average Earnings per ride
@@ -146,6 +147,31 @@ driver_attributes <- full_join(driver_attributes, average_prime)
 driver_attributes
 ```
 
+## Number of Days Worked
+```{r}
+number_of_days_worked <- full %>% 
+  mutate(day = format(as.Date(timestamp,format="%Y-%m-%d"), format = "%d")) %>% 
+  mutate(month = format(as.Date(timestamp,format="%Y-%m-%d"), format = "%m")) %>% 
+  group_by(driver_id) %>% 
+  select(driver_id,day,month) %>% 
+  distinct() %>% 
+  mutate(number_of_days_worked = n()) %>% 
+  select(driver_id,number_of_days_worked) %>% 
+  distinct()
+
+driver_attributes <- full_join(driver_attributes, number_of_days_worked)
+driver_attributes
+```
+
+
+## Rides per day worked
+```{r}
+driver_attributes <- driver_attributes %>% 
+  mutate(rides_per_day_worked = number_of_rides_given/number_of_days_worked)
+driver_attributes
+```
+
+
 # Export driver attributes
 ```{r}
 write_csv(driver_attributes, path = "data/driver_attributes_complete.csv")
@@ -175,6 +201,31 @@ driver_attributes %>%
 
 driver_attributes %>% 
   summarise(mean(average_prime_time_weighted_by_ride_duration))
+
+driver_attributes %>% 
+  summarise(mean(rides_per_day_worked))
 ```
 
+# density plots of number of rides
+```{r}
+density <- driver_attributes %>% 
+  select(number_of_rides_given)
+
+density(density$number_of_rides_given)
+max <- density(density$number_of_rides_given)$x[(which.max(density(density$number_of_rides_given)$y))]
+second_max <- density(density$number_of_rides_given)$x[which(density(density$number_of_rides_given)$y == max(density(density$number_of_rides_given)$y[density(density$number_of_rides_given)$x > 200]))]
+
+density %>% 
+  ggplot(mapping = aes(x = number_of_rides_given)) +
+  geom_density(color="black", fill="lightgray") +
+  labs (title = "Distribution of Number of Rides Given", x = "Number of Rides Given Per Driver", y = "Density") +
+  theme_minimal() +
+  geom_vline(xintercept = max, color="red",
+             linetype="dashed") +
+  geom_vline(xintercept = second_max, color="red",
+             linetype="dashed") +
+  annotate("text",x=85,y=0.00375, label = "42 rides", size = 3) +
+  annotate("text",x=299,y = 0.00241, label = "252 rides", size = 3)
+ggsave(filename = "plots/num_rides_density.png", dpi = 400, width = 7.5, height = 4)
+```
 

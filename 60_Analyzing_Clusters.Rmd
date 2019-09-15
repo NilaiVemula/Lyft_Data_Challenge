@@ -14,7 +14,9 @@ full
 driver_attributes <- read_csv("data/driver_attributes_complete.csv")
 driver_attributes
 
-cluster_assignments <- read_csv(file = "data/cluster_assignments.csv")
+cluster_assignments <- read_csv("data/cluster_assignments.csv", 
+    col_types = cols(cluster = col_factor(levels = c("1", 
+        "2", "3", "4"))))
 
 ```
 
@@ -101,3 +103,18 @@ if(p < 0.05) {
   print(paste0(variable, " is NOT significant"))
 }
 ```
+
+```{r}
+driver_attributes <- left_join(driver_attributes, cluster_assignments, by = "driver_id") %>% 
+  group_by(cluster)
+```
+
+
+```{r}
+career_length_so_far <- read_csv(file = "data/career_length_so_far.csv")
+left_join(driver_attributes, career_length_so_far, by = "driver_id") %>% 
+  mutate(rides_per_day = number_of_rides_given/career_duration_so_far_in_days) %>% 
+  select(-career_duration_so_far_in_days) %>% 
+  summarise(mean(rides_per_day))
+```
+
