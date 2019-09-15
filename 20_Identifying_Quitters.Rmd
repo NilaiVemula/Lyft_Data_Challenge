@@ -35,8 +35,15 @@ first_driver <- driver_lengths %>%
   na.omit() %>% 
   select(time_between_rides = time_from_employment_to_current_ride)
 
-first_driver %>% ggplot(aes(time_between_rides)) +
-  geom_density() 
+first_driver %>% ggplot(aes(time_between_rides/(60*24))) +
+  geom_density(color="black", fill="lightgray") +
+  labs(title = "Distribution of Length of Break Between Rides for an Active Driver", x="Length of Break (days)", y="Density")+
+  theme_minimal() +
+  geom_vline(aes(xintercept=(6/24), color="red"),
+             linetype="dashed") +
+  theme(legend.position = "none")
+  
+ggsave(filename = "plots/first_driver_density.png", dpi = 400, width = 7.5, height = 4)
 
 #+
  # coord_cartesian(xlim = c(0, 600)) 

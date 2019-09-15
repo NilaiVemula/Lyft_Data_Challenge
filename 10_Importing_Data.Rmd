@@ -159,5 +159,3 @@ dim(full)
 ```{r}
 write_csv(full, path = "data/full.csv")
 ```
-
-
