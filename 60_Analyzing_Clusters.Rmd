@@ -1,0 +1,103 @@
+---
+title: "60_Analyzing_Clusters"
+output: html_notebook
+---
+
+```{r setup}
+library(tidyverse)
+```
+
+```{r}
+full <- read_csv("data/full.csv", col_types = cols(timestamp = col_datetime(format = "%Y-%m-%d%.%H:%M:%S%.")))
+full
+
+driver_attributes <- read_csv("data/driver_attributes_complete.csv")
+driver_attributes
+
+cluster_assignments <- read_csv(file = "data/cluster_assignments.csv")
+
+```
+
+```{r}
+non_quitter_attributes <- driver_attributes %>% 
+  filter(quit_within_90_days == F)
+
+non_quitter_attributes <- left_join(non_quitter_attributes,cluster_assignments,by="driver_id") %>% select(-career_length_in_days,-quit_within_90_days)
+non_quitter_attributes
+```
+
+```{r}
+non_quitter_attributes %>% 
+  group_by(cluster) %>% 
+  summarise(
+    `Average Earnings per Ride (USD)` = round(mean(average_earnings_per_ride), 2),
+    
+    `Average Ride Distance (miles)` = round(mean(average_ride_distance) * 0.000621371, 2),
+    
+    `Average Ride Duration (mins)` = round(mean(average_ride_duration) / 60 , 2),
+    
+    `Average Eagerness` = round(mean(scaled_average_eagerness), 2),
+    
+    `Average Responsiveness` = round(mean(scaled_average_response_time_ranking), 2),
+    
+    `Average Number of Rides Given` = round(mean(number_of_rides_given), 2),
+    
+    `Average Prime Time Weighted by Ride Duration` = round(mean(average_prime_time_weighted_by_ride_duration), 2),
+    
+    `Size`= n()
+  )
+```
+
+# t-test between average earnings
+
+```{r}
+variable <- "earnings"
+
+earnings <- non_quitter_attributes %>% 
+  group_by(cluster) %>% 
+  select(average_earnings_per_ride) %>% 
+  group_split()
+
+p <- t.test(earnings[[1]]$average_earnings_per_ride,earnings[[2]]$average_earnings_per_ride)$p.value 
+
+if(p < 0.05) {
+  print(paste0(variable, " is significant"))
+}
+```
+
+# t-test between ride distance
+
+```{r}
+variable <- "ride distance"
+
+distance <- non_quitter_attributes %>% 
+  group_by(cluster) %>% 
+  select(average_ride_distance) %>% 
+  group_split()
+
+p <- t.test(distance[[1]]$average_ride_distance,distance[[2]]$average_ride_distance)$p.value 
+
+if(p < 0.05) {
+  print(paste0(variable, " is significant"))
+}
+```
+
+
+# t-test between ride duration
+
+```{r}
+variable <- "ride duration"
+
+duration <- non_quitter_attributes %>% 
+  group_by(cluster) %>% 
+  select(average_ride_duration) %>% 
+  group_split()
+
+p <- t.test(duration[[1]]$average_ride_duration,duration[[2]]$average_ride_duration)$p.value
+
+if(p < 0.05) {
+  print(paste0(variable, " is significant"))
+} else {
+  print(paste0(variable, " is NOT significant"))
+}
+```
