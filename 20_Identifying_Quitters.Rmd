@@ -6,6 +6,7 @@ output: html_notebook
 #Import full data
 ```{r import}
 library(tidyverse)
+library(lubridate)
 full <- read_csv("data/full.csv", col_types = cols(timestamp = col_datetime(format = "%Y-%m-%d%.%H:%M:%S%.")))
 full
 ```
@@ -70,7 +71,10 @@ significant_time_between_sessions_set <- driver_lengths %>%
   mutate(mean = mean(time_between_sessions)) %>% 
   mutate(sd = sd(time_between_sessions)) %>% 
   mutate(size = n()) %>%
-  filter(last_break>mean+2*sd) #only chose significant breaks
+  mutate(max_break = max(time_between_sessions)) %>% 
+  filter(last_break>mean+2*sd) %>% 
+  filter(last_break > max_break)
+  as_tibble()#only chose significant breaks
 # %>% 
   # select(driver_id) %>% 
   # distinct(driver_id)

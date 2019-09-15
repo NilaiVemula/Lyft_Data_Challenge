@@ -23,14 +23,68 @@ driver_attributes
 quitter_attributes <- driver_attributes %>% 
   filter(quit_within_90_days == T) %>% 
   select(-quit_within_90_days) %>% 
-  mutate(lifetime_earnings = number_of_rides_given * average_earnings_per_ride) %>% 
+  mutate(lifetime_earnings = number_of_rides_given * average_earnings_per_ride)
   
 quitter_attributes
 ```
 
 ```{r}
 average_quitter_earnings <- quitter_attributes %>% 
-  summarise(mean(lifetime_earnings))
+  summarise(`Average Lifetime Value of Quitters (USD)` = round(mean(lifetime_earnings),2))
 average_quitter_earnings
+```
+
+```{r}
+quitter_attributes %>%
+  summarise(
+    `Average Earnings per Ride (USD)` = round(mean(average_earnings_per_ride), 2),
+    
+    `Average Ride Distance (miles)` = round(mean(average_ride_distance) * 0.000621371, 2),
+    
+    `Average Ride Duration (mins)` = round(mean(average_ride_duration) / 60 , 2),
+    
+    `Average Eagerness` = round(mean(scaled_average_eagerness), 2),
+    
+    `Average Responsiveness` = round(mean(scaled_average_response_time_ranking), 2),
+    
+    `Number of Rides Given` = round(mean(number_of_rides_given), 2),
+    
+    `Average Prime Time Weighted by Ride Duration` = round(mean(average_prime_time_weighted_by_ride_duration), 2),
+    
+    `Career Length (days)` = round(mean(career_length_in_days), 2)
+  )
+```
+
+# Analyze Quitter Cluster
+
+```{r}
+cluster_assignments <- read_csv(file = "data/cluster_assignments.csv")
+quitter_attributes <- left_join(quitter_attributes,cluster_assignments,by="driver_id")
+
+quitter_attributes
+```
+
+```{r}
+quitter_attributes %>% 
+  group_by(cluster) %>% 
+  summarise(
+    `Average Earnings per Ride (USD)` = round(mean(average_earnings_per_ride), 2),
+    
+    `Average Ride Distance (miles)` = round(mean(average_ride_distance) * 0.000621371, 2),
+    
+    `Average Ride Duration (mins)` = round(mean(average_ride_duration) / 60 , 2),
+    
+    `Average Eagerness` = round(mean(scaled_average_eagerness), 2),
+    
+    `Average Responsiveness` = round(mean(scaled_average_response_time_ranking), 2),
+    
+    `Number of Rides Given` = round(mean(number_of_rides_given), 2),
+    
+    `Average Prime Time Weighted by Ride Duration` = round(mean(average_prime_time_weighted_by_ride_duration), 2),
+    
+    `Career Length (days)` = round(mean(career_length_in_days), 2),
+    
+    `Size`= n()
+  )
 ```
 

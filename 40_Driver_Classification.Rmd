@@ -198,3 +198,14 @@ ggplot(aes(x = X, y = Y), data = tsne_data) +
 
 looks like four clusters with a bit of messiness between cluster 3 and 4
 
+# Export Cluster Assignments
+
+```{r}
+cluster_assignments <- enframe(pam_fit_4$clustering) %>% 
+  select(driver_id = name, cluster = value)
+
+cluster_assignments
+
+write_csv(cluster_assignments, path = "data/cluster_assignments.csv")
+```
+
