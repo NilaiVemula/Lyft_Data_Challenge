@@ -33,3 +33,15 @@ We can now categorize each break longer than 6 hours as a "break between session
 2. at least 98% of the previous longest break between sessions a driver took
 
 The reason for #2 is that if a driver has previous history of taking an x day break that is considered significant, we can assume that they may take a break of similar length again. After filtering out all the drivers whose last break was significant, we determined that out of 837 drivers that gave rides, 259 of them quit within the 90 day period.
+
+
+
+At this point, it became clear that our population of drivers could be separated into distinct groups in addition to being a quitter or not. We defined the following attributes for each driver in an attempt to group them by PCA clustering. An explanation follows the attributes that are not intuitive based on name.
+
+- **Career length (days):** how long it has been since a driver onboarded. This is only relevant for drivers that quit
+- **Average Ride Duration (minutes)**
+- **Average Ride Distance (miles)**
+- **Number of rides given**
+- **Eagerness (scaled 0 to 1):** a measure of how "eager" a driver is to take a ride, equivalent to the inverse of the *time* *difference between when a ride is requested and when the driver accepts a ride*. The driver with an eagerness of 1 is the quickest among all drivers to accept a ride
+- **Response Time (scaled 0 to 1):** a measure of how far drivers are willing to travel for a ride, equivalent to the inverse of the *time difference between when a driver accepts a ride and when they arrive at the pickup location*. The driver with a response time of 1 is quickest to arrive at the pickup location.
+- **Average Prime Time (weighted by ride duration, 0 to 100)**
