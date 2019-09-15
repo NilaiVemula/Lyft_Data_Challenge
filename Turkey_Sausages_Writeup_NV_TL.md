@@ -63,6 +63,7 @@ It is important to note our clustering methodology was unsupervised, meaning we 
 | Low-volume Quitters   | 13.56                           | 4.57                          | 14.04                        | 0.67              | 0.67                   | 43.07                         | 14.97                                        | 198  | 10.75                 | 5                                      |
 | Hustlers              | 13.49                           | 4.28                          | 14.3                         | 0.68              | 0.69                   | 341.57                        | 17.71                                        | 436  | 45.29                 | 8                                      |
 | Long-term Part-timers | 14.23                           | 5.09                          | 14.73                        | 0.63              | 0.65                   | 44.33                         | 14.07                                        | 142  | 13.18                 | 4                                      |
+| Average | 13.64                             | 4.48                          | 14.33                        | 0.67              | 0.67                   | 220.08                        | 16.57                                          | 837  | 31.36                 | 6                                      |
 
 Note: the cluster naming was done after all analysis was completed and the quitting attribute was merged into the cluster name - all clusters were homogenous in quitters or non-quitters.
 
