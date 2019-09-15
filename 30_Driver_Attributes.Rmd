@@ -181,29 +181,33 @@ write_csv(driver_attributes, path = "data/driver_attributes_complete.csv")
 # Descriptive Statistics
 
 ```{r}
-driver_attributes %>% 
-  summarise(mean(average_earnings_per_ride))
+average_stats <- driver_attributes %>% 
+  summarise(
+    `Average Earnings per Ride (USD)` = round(mean(average_earnings_per_ride), 2),
+    
+    `Average Ride Distance (miles)` = round(mean(average_ride_distance) * 0.000621371, 2),
+    
+    `Average Ride Duration (mins)` = round(mean(average_ride_duration) / 60 , 2),
+    
+    `Average Eagerness` = round(mean(scaled_average_eagerness), 2),
+    
+    `Average Responsiveness` = round(mean(scaled_average_response_time_ranking), 2),
+    
+    `Average Number of Rides Given` = round(mean(number_of_rides_given), 2),
+    
+    `Average Prime Time Weighted by Ride Duration` = round(mean(average_prime_time_weighted_by_ride_duration), 2),
+    
+    `Size`= n(),
+    
+    `Number of Days Worked` = round(mean(number_of_days_worked),2),
+    
+    `Average Number of Rides Per Day Worked` = round(mean(rides_per_day_worked))
+  ) 
 
-driver_attributes %>% 
-  summarise(mean(average_ride_distance))
+average_stats
 
-driver_attributes %>% 
-  summarise(mean(average_ride_duration))
-
-driver_attributes %>% 
-  summarise(mean(scaled_average_eagerness))
-
-driver_attributes %>% 
-  summarise(mean(scaled_average_response_time_ranking))
-
-driver_attributes %>% 
-  summarise(mean(number_of_rides_given))
-
-driver_attributes %>% 
-  summarise(mean(average_prime_time_weighted_by_ride_duration))
-
-driver_attributes %>% 
-  summarise(mean(rides_per_day_worked))
+average_stats %>% 
+  write_csv(path = "data/average_driver_stats.csv")
 ```
 
 # density plots of number of rides

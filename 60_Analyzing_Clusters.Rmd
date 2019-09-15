@@ -163,3 +163,23 @@ if(p < 0.05) {
   print(paste0(variable, " is NOT significant"))
 }
 ```
+
+# Earnings Distribution
+```{r}
+driver_attributes %>% 
+  ggplot(aes(x="", fill=cluster)) + geom_bar(width = 1) + coord_polar("y", start=0) +
+  theme_minimal()
+```
+
+# Average Earnings Per Day for Non quitters
+```{r}
+full %>% 
+  left_join(driver_attributes, by = "driver_id") %>% 
+  filter(quit_within_90_days == F) %>% 
+  select(driver_id, ride_id, driver_earnings) %>% 
+  distinct() %>% 
+  group_by(driver_id) %>% 
+  summarise(total_earnings = sum(driver_earnings)) %>% 
+  summarise(mean(total_earnings))
+```
+
