@@ -107,9 +107,12 @@ quitter_attributes %>%
                      values = c("#00BFC4","#C77CFF")) +
   geom_hline(yintercept = 43, color="red",
              linetype="dashed") +
+  annotate("text",x = 80, y = 65, label = "43 rides", size = 3) +
+  
 
   labs(title = "Number of Rides Given v. Career Length for Quitters", x = "Career Length (days)", y = "Number of Rides Given") +
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text.y = element_text(hjust = 1.4))
 ggsave(filename = "plots/num_rides_vs_quitter_career_length.png", dpi = 400, width = 7.5, height = 4)
 ```
 

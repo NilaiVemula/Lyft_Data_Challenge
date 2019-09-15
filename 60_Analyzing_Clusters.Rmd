@@ -21,15 +21,17 @@ cluster_assignments <- read_csv("data/cluster_assignments.csv",
 ```
 
 ```{r}
-non_quitter_attributes <- driver_attributes %>% 
-  filter(quit_within_90_days == F)
-
-non_quitter_attributes <- left_join(non_quitter_attributes,cluster_assignments,by="driver_id") %>% select(-career_length_in_days,-quit_within_90_days)
-non_quitter_attributes
+driver_attributes <- left_join(driver_attributes,cluster_assignments,by="driver_id")
+driver_attributes
 ```
 
 ```{r}
-non_quitter_attributes %>% 
+cluster_names <- c("High-volume Quitters","Low-volume Quitters","Hustlers","Long-term Part-timers")
+```
+
+
+```{r}
+summary_clusters <- driver_attributes %>% 
   group_by(cluster) %>% 
   summarise(
     `Average Earnings per Ride (USD)` = round(mean(average_earnings_per_ride), 2),
@@ -46,16 +48,32 @@ non_quitter_attributes %>%
     
     `Average Prime Time Weighted by Ride Duration` = round(mean(average_prime_time_weighted_by_ride_duration), 2),
     
-    `Size`= n()
-  )
+    `Size`= n(),
+    
+    `Number of Days Worked` = round(mean(number_of_days_worked),2),
+    
+    `Average Number of Rides Per Day Worked` = round(mean(rides_per_day_worked))
+  ) %>% 
+  cbind(cluster_names) %>% 
+  select(`Cluster Name` = cluster_names, 2:11)
+  
+summary_clusters
 ```
 
-# t-test between average earnings
+```{r}
+write_csv(summary_clusters, path = "data/summary_clusters.csv")
+```
+
+# T-tests between the Husters and the Part-timers
+
+Trying to see which variabes are statistically significant between the two non-quitter clusters
+
+## average earnings
 
 ```{r}
 variable <- "earnings"
-
-earnings <- non_quitter_attributes %>% 
+earnings <- driver_attributes %>% 
+  filter(cluster == 3 | cluster == 4) %>% 
   group_by(cluster) %>% 
   select(average_earnings_per_ride) %>% 
   group_split()
@@ -67,12 +85,13 @@ if(p < 0.05) {
 }
 ```
 
-# t-test between ride distance
+## ride distance
 
 ```{r}
 variable <- "ride distance"
 
-distance <- non_quitter_attributes %>% 
+distance <- driver_attributes %>% 
+  filter(cluster == 3 | cluster == 4) %>% 
   group_by(cluster) %>% 
   select(average_ride_distance) %>% 
   group_split()
@@ -85,12 +104,13 @@ if(p < 0.05) {
 ```
 
 
-# t-test between ride duration
+## ride duration
 
 ```{r}
 variable <- "ride duration"
 
-duration <- non_quitter_attributes %>% 
+duration <- driver_attributes %>% 
+  filter(cluster == 3 | cluster == 4) %>% 
   group_by(cluster) %>% 
   select(average_ride_duration) %>% 
   group_split()
@@ -104,17 +124,42 @@ if(p < 0.05) {
 }
 ```
 
-```{r}
-driver_attributes <- left_join(driver_attributes, cluster_assignments, by = "driver_id") %>% 
-  group_by(cluster)
-```
-
+## number of rides
 
 ```{r}
-career_length_so_far <- read_csv(file = "data/career_length_so_far.csv")
-left_join(driver_attributes, career_length_so_far, by = "driver_id") %>% 
-  mutate(rides_per_day = number_of_rides_given/career_duration_so_far_in_days) %>% 
-  select(-career_duration_so_far_in_days) %>% 
-  summarise(mean(rides_per_day))
+variable <- "number of rides"
+
+num <- driver_attributes %>% 
+  filter(cluster == 3 | cluster == 4) %>% 
+  group_by(cluster) %>% 
+  select(number_of_rides_given) %>% 
+  group_split()
+
+p <- t.test(num[[1]]$number_of_rides_given,num[[2]]$number_of_rides_given)$p.value
+
+if(p < 0.05) {
+  print(paste0(variable, " is significant"))
+} else {
+  print(paste0(variable, " is NOT significant"))
+}
 ```
 
+## rides per day
+
+```{r}
+variable <- "number of rides per day worked"
+
+num <- driver_attributes %>% 
+  filter(cluster == 3 | cluster == 4) %>% 
+  group_by(cluster) %>% 
+  select(rides_per_day_worked) %>% 
+  group_split()
+
+p <- t.test(num[[1]]$rides_per_day_worked,num[[2]]$rides_per_day_worked)$p.value
+
+if(p < 0.05) {
+  print(paste0(variable, " is significant"))
+} else {
+  print(paste0(variable, " is NOT significant"))
+}
+```
