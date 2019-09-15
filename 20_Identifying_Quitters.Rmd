@@ -115,10 +115,6 @@ career_length_so_far <- driver_lengths %>%
 career_length_so_far
 ```
 
-```{r}
-write_csv(career_length_so_far, path = "data/career_length_so_far.csv")
-```
-
 
 ```{r}
 list_of_all_drivers <- career_length_so_far %>% select(driver_id) %>% distinct()
