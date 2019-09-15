@@ -46,11 +46,11 @@ We continued to extract attributes from the data such as quitting or not quittin
 
 Of these attributes, the distribution of **Number of Rides Given** was very interesting as it was was bimodal. ![num_rides_density](C:\Users\luote\Documents\Projects\Lyft_Data_Challenge\plots\num_rides_density.png)
 
-We noted that this distinction between giving many or few rides could be a result of treating Lyft driving as either a full-time or part-time job. We hypothesized that that drivers could be classified by either quitting or non-quitting and by high-volume of rides or low-volume of rides given. Additionally, we believe these are independent variables.
+We noted that this distinction between giving many or few rides could be a result of treating Lyft driving as either a full-time or part-time job. We hypothesized that that drivers could be classified by either quitting or non-quitting and by high-volume of rides or low-volume of rides given. Additionally, we believe these two factors are independent.
 
-At this point, it became clear that our population of drivers could be separated into distinct groups in addition to being a quitter or not. We defined the following attributes for each driver in an attempt to group them by PCA clustering.
+At this point, it became clear that our population of drivers could be separated into distinct groups, in addition to being a quitter or not. We defined the following attributes for each driver in an attempt to group them by PCA clustering.
 
-It is important to note that we did not specify what attributes the PCA analysis should make clusters around. Thus, the PCA analysis helps to confirm that these 4 types of drivers do exist. 	
+It is important to note that we did not specify what attributes the PCA analysis should make clusters around. Thus, the PCA analysis helps to confirm that these 4 types of drivers do exist. The following figure and table define our clusters and provide descriptive statistics for each cluster. 
 
 ![clustering](C:\Users\luote\Documents\Projects\Lyft_Data_Challenge\plots\clustering.png)
 
@@ -61,19 +61,23 @@ It is important to note that we did not specify what attributes the PCA analysis
 | Hustlers              | 13.49                           | 4.28                          | 14.3                         | 0.68              | 0.69                   | 341.57                        | 17.71                                        | 436  | 45.29                 | 8                                      |
 | Long-term Part-timers | 14.23                           | 5.09                          | 14.73                        | 0.63              | 0.65                   | 44.33                         | 14.07                                        | 142  | 13.18                 | 4                                      |
 
-Looking at the two clusters of quitters by themselves yields more surprising results. Here, the number of rides given by the quitters is plotted against career length
+Note: the cluster naming was done after all analysis was completed and the quitting attribute was merged into the cluster name - all clusters were homogenous in quitters or non-quitters.
+
+We have shown that not all drivers act alike, but how should we determine which driver's are generating more value for Lyft? The Hustlers clearly make the most total revenue for Lyft, but that is simply due to the volume of rides they give, making this point rather uninteresting. So, let's consider earnings when number of rides is controlled for. In this case, Long-term Part-timers stand out. They make $0.59 more than the average driver per ride. One explanation for this is their speed. By using average ride duration and distance, we found that that long-term part timers drove at an average speed of 20.73 mph, compared to 18.72 mph of the average driver. Essentially, these drivers are making more money per ride by choosing slightly longer rides and driving a little faster. 
+
+Another group to note is the High-Volume quitters, who have average the highest weighted Prime Time per ride.  We believe this group is also very important. Although these drivers make average earnings per ride, their willingness to drive more during Prime Time is beneficial towards Lyft as a company. In general, if rides in an area are subject to Prime Time pricing, then there are a lot of riders compared to drivers in Lyft and other competitors such as Uber. This is a common situations where a rider may switch from Uber to Lyft and vice versa. Having more drivers available during busy hours is crucial in controlling more of the market. 
+
+That leaves just the Low-volume quitters. Looking at the two clusters of quitters by themselves yields more surprising results. Here, the number of rides given by the quitters is plotted against career length
 
 ![num_rides_vs_quitter_career_length](C:\Users\luote\Documents\Projects\Lyft_Data_Challenge\plots\num_rides_vs_quitter_career_length.png)
 
-The high volume quitters give a varying amount of rides before quitting. The low-volume group, however, consistently quits after around 40 rides, regardless of career length.
+The high-volume quitters give a varying amount of rides before quitting. Since the high-volume drivers seem to be driving full time, we suspect that these are drivers are looking for more traditional jobs and chose to drive for Lyft in the meantime. They then quit when they found another job. It wouldn't make sense for a full-time Lyft driver to quit otherwise. The low-volume group, however, consistently quits after around 40 rides, regardless of career length. They drive less often and complete only half as many rides as their high-volume quitter counterparts. This trend suggests another factor is causing these low-volume drivers to quit. 
 
 [Lifetime Values]
 
 The lifetime value of a driver that quit within 3 months is calculable since the data for the entire lifetime is available - it's the sum of each ride's earnings. We are going to assume that Lyft's revenue is proportional to the amount of money that a driver makes based on the ride fare formula. This was calculated to be $1523.09. 
 
-For non-quitters, lifetime value is a function of career length. 
-
-[Find average earnings per day for all non quitters]
+For non-quitters, lifetime value is a function of career length. On average, drivers that stick with Lyft long term generate $40.36 per day. Therefore, lifetime value would be 40.36 x career length in days. The 90 day value of non-quitters is $3632.63.
 
 
 
