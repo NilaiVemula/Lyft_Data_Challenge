@@ -7,7 +7,7 @@ date: 9-15-2019
 ---
 
 # Lyft Data Challenge Report
-Team Turkey Sausages
+Team Name: Turkey Sausages
 
 ## Statement of Problem
 
@@ -66,12 +66,12 @@ It is important to note our clustering methodology was unsupervised, meaning we 
 
 | Cluster Name          | Average Earnings per Ride (USD) | Average Ride Distance (miles) | Average Ride Duration (mins) | Average Eagerness | Average Responsiveness | Average Number of Rides Given | Average Prime Time Weighted by Ride Duration | Size | Number of Days Worked | Average Number of Rides Per Day Worked |
 | --------------------- | ------------------------------- | ----------------------------- | ---------------------------- | ----------------- | ---------------------- | ----------------------------- | -------------------------------------------- | ---- | --------------------- | -------------------------------------- |
-| High-volume Quitters  | 13.6                            | 4.22                          | 14.49                        | 0.69              | 0.66                   | 335.43                        | 19.42                                        | 61   | 40.95                 | 9                                      |
+| High-volume Quitters  | 13.60                           | 4.22                          | 14.49                        | 0.69              | 0.66                   | 335.43                        | 19.42                                        | 61   | 40.95                 | 9                                      |
 | Low-volume Quitters   | 13.56                           | 4.57                          | 14.04                        | 0.67              | 0.67                   | 43.07                         | 14.97                                        | 198  | 10.75                 | 5                                      |
 | Hustlers              | 13.49                           | 4.28                          | 14.3                         | 0.68              | 0.69                   | 341.57                        | 17.71                                        | 436  | 45.29                 | 8                                      |
 | Long-term Part-timers | 14.23                           | 5.09                          | 14.73                        | 0.63              | 0.65                   | 44.33                         | 14.07                                        | 142  | 13.18                 | 4                                      |
 
-Note: the cluster naming was done after all analysis was completed and the quitting attribute was merged into the cluster name - all clusters were homogenous in quitters or non-quitters.
+Note: The cluster naming was done after all analysis was completed and the quitting attribute was merged into the cluster name - all clusters were homogenous in quitters or non-quitters.
 
 We have shown that not all drivers act alike, but how should we determine which driver's are generating more value for Lyft? The Hustlers clearly make the most total revenue for Lyft, but that is simply due to the volume of rides they give, making this point rather uninteresting. So, let's consider earnings when number of rides is controlled for. In this case, Long-term Part-timers stand out. They make $0.59 more than the average driver per ride. One explanation for this is their speed. By using average ride duration and distance, we found that that long-term part timers drove at an average speed of 20.73 mph, compared to 18.72 mph of the average driver. Essentially, these drivers are making more money per ride by choosing slightly longer rides and driving a little faster. 
 
@@ -85,7 +85,7 @@ The high-volume quitters give a varying amount of rides before quitting. Since t
 
 ## Lifetime Values 
 
-The lifetime value of a driver that quit within 3 months is calculable since the data for the entire lifetime is available - it's the sum of each ride's earnings. We are going to assume that Lyft's revenue is proportional to the amount of money that a driver makes based on the ride fare formula. This was calculated to be $1523.09. 
+The lifetime value of a driver that quit within three months is calculable since the data for the entire lifetime is available - it's the sum of each ride's earnings. We are going to assume that Lyft's revenue is proportional to the amount of money that a driver makes based on the ride fare formula. This was calculated to be $1523.09. 
 
 For non-quitters, lifetime value is a function of career length. On average, drivers that stick with Lyft long term generate $40.36 per day. Therefore, lifetime value would be 40.36 x career length in days. The 90 day value of non-quitters is $3632.63.
 
