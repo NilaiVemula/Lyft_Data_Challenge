@@ -1,0 +1,221 @@
+---
+title: "40_Driver_Classification"
+output: html_notebook
+---
+# Import Data
+```{r setup}
+library(tidyverse)
+
+driver_attributes <- read_csv("data/driver_attributes_complete.csv")
+
+driver_attributes
+```
+
+
+ 
+# Principle Component Analysis 
+
+
+```{r}
+
+driver_attributes <- driver_attributes %>% remove_rownames %>% column_to_rownames(var="driver_id") %>% select(-quit_within_90_days)
+
+library("factoextra")
+library("FactoMineR")
+driver.pca <- PCA(driver_attributes, graph = FALSE)
+
+```
+
+```{r}
+print(driver.pca)
+```
+
+## Scree plot
+
+```{r}
+eigenvalues <- driver.pca$eig
+head(eigenvalues[, 1:2])
+fviz_screeplot(driver.pca, ncp=10)
+```
+
+## Plot the correlations/loadings of the variables with the components
+
+```{r}
+head(driver.pca$var$coord)
+
+fviz_pca_var(driver.pca)
+
+```
+
+```{r}
+fviz_pca_contrib(driver.pca, choice = "var", axes = 1)
+fviz_pca_contrib(driver.pca, choice = "var", axes = 2)
+fviz_pca_contrib(driver.pca, choice = "var", axes = 1:2)
+```
+
+```{r}
+fviz_pca_var(driver.pca, col.var="contrib")
+```
+
+```{r}
+fviz_pca_ind(driver.pca, label="none")
+```
+
+# mixed clustering
+Based off of: https://www.r-bloggers.com/clustering-mixed-data-types-in-r/
+```{r setup2}
+library(Rtsne) # for t-SNE plot
+library(ggplot2) # for visualization
+library(cluster)
+library(tidyverse)
+
+set.seed(1680) # for reproducibility
+
+```
+
+```{r}
+driver_attributes <- read_csv("data/driver_attributes_complete.csv")
+
+driver_attributes <- driver_attributes %>% select(-career_length_in_days) %>% select(-average_ride_duration) %>% select(-average_ride_distance) %>% select(-rides_per_day_worked)%>% select(-number_of_days_worked)%>% remove_rownames %>% column_to_rownames(var="driver_id")
+
+driver_attributes
+```
+
+
+```{r}
+gower_dist <- daisy(driver_attributes,
+                    metric = "gower",
+                    type = list(logratio = 3))
+```
+
+```{r}
+summary(gower_dist)
+```
+
+```{r}
+gower_mat <- as.matrix(gower_dist)
+
+#most similar pair
+driver_attributes[
+  which(gower_mat == min(gower_mat[gower_mat != min(gower_mat)]),
+        arr.ind = TRUE)[1, ], ]
+
+#most dissimilar pair
+driver_attributes[
+  which(gower_mat == max(gower_mat[gower_mat != max(gower_mat)]),
+        arr.ind = TRUE)[1, ], ]
+```
+
+```{r}
+# Calculate silhouette width for many k using PAM
+
+sil_width <- c(NA)
+
+for(i in 2:10){
+  
+  pam_fit <- pam(gower_dist,
+                 diss = TRUE,
+                 k = i)
+  
+  sil_width[i] <- pam_fit$silinfo$avg.width
+  
+}
+
+# Plot sihouette width (higher is better)
+
+plot(1:10, sil_width,
+     xlab = "Number of clusters",
+     ylab = "Silhouette Width")
+lines(1:10, sil_width)
+```
+
+plot peaks at 2, so 2 clusters are recommended
+
+```{r}
+pam_fit <- pam(gower_dist, diss = TRUE, k = 2)
+
+pam_results <- driver_attributes %>%
+  mutate(cluster = pam_fit$clustering) %>%
+  group_by(cluster) %>%
+  do(the_summary = summary(.))
+
+pam_results$the_summary
+```
+descriptive statistics for each cluster ^
+
+
+these are the most representative samples of their clusters:
+```{r}
+driver_attributes[pam_fit$medoids, ]
+```
+
+```{r}
+tsne_obj <- Rtsne(gower_dist, is_distance = TRUE)
+
+tsne_data <- tsne_obj$Y %>%
+  data.frame() %>%
+  setNames(c("X", "Y")) %>%
+  mutate(cluster = factor(pam_fit$clustering))
+
+ggplot(aes(x = X, y = Y), data = tsne_data) +
+  geom_point(aes(color = cluster))
+```
+
+this makes it look like there should be four clusters
+
+now i will re run with four clusters
+
+
+```{r}
+pam_fit_4 <- pam(gower_dist, diss = TRUE, k = 4)
+
+pam_results_4 <- driver_attributes %>%
+  mutate(cluster = pam_fit_4$clustering) %>%
+  group_by(cluster) %>%
+  do(the_summary = summary(.))
+
+pam_results_4$the_summary
+```
+descriptive statistics for each cluster ^
+
+these are the most representative samples of their clusters:
+```{r}
+driver_attributes[pam_fit_4$medoids, ]
+```
+
+looks like quit status and number of rides given are two major drivers of clustering
+
+```{r}
+tsne_obj <- Rtsne(gower_dist, is_distance = TRUE)
+
+tsne_data <- tsne_obj$Y %>%
+  data.frame() %>%
+  setNames(c("X", "Y")) %>%
+  mutate(cluster = factor(pam_fit_4$clustering))
+
+ggplot(aes(x = X, y = Y), data = tsne_data) +
+  geom_point(aes(color = cluster)) +
+  scale_color_manual(name="Cluster",
+                         breaks=c("1", "2","3","4"),
+                         labels=c("1: High-volume Quitters", "2: Low-volume Quitters","3: Hustlers","4: Long-term Part-timers"),
+                     values = c("#00BFC4","#C77CFF", "#F8766D", "#7CAE00")) +
+  labs(title = "Clustering of Drivers") +
+  theme_minimal() +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+ggsave(filename = "plots/clustering.png", dpi = 400, width = 6, height = 4, units = "in")  
+```
+
+looks like four clusters with a bit of messiness between cluster 3 and 4
+
+# Export Cluster Assignments
+
+```{r}
+cluster_assignments <- enframe(pam_fit_4$clustering) %>% 
+  select(driver_id = name, cluster = value)
+
+cluster_assignments
+
+write_csv(cluster_assignments, path = "data/cluster_assignments.csv")
+```
+

@@ -1,0 +1,170 @@
+---
+title: "20_Identifying_Quitters"
+output: html_notebook
+---
+
+#Import full data
+```{r import}
+library(tidyverse)
+library(lubridate)
+full <- read_csv("data/full.csv", col_types = cols(timestamp = col_datetime(format = "%Y-%m-%d%.%H:%M:%S%.")))
+full
+```
+
+```{r}
+last_recorded_timestamp<-as_datetime("2016-06-27 00:50:50 UTC")
+first_recorded_timestamp<-as_datetime("2016-03-28 05:48:18 UTC")
+```
+
+
+```{r}
+driver_lengths <- full %>% group_by(ride_id) %>% mutate(last_event_time_for_ride = max(timestamp)) %>% filter(timestamp==last_event_time_for_ride) %>% ungroup() %>% mutate(time_from_employment_to_current_ride = last_event_time_for_ride-driver_onboard_date) %>% select(driver_id, time_from_employment_to_current_ride, ride_id, last_event_time_for_ride = timestamp, event ) 
+driver_lengths
+```
+
+
+```{r}
+# proof of concept
+first_driver <- driver_lengths %>%
+  drop_na() %>% 
+  group_by(driver_id) %>% 
+  arrange(last_event_time_for_ride) %>% 
+  filter(driver_id == "002be0ffdc997bd5c50703158b7c2491") %>% 
+  select(time_from_employment_to_current_ride) %>% 
+  mutate_all(funs(. - lag(.))) %>% # subtract by previous value to get time between rides
+  na.omit() %>% 
+  select(time_between_rides = time_from_employment_to_current_ride)
+
+first_driver %>% ggplot(aes(time_between_rides/(60*24))) +
+  geom_density(color="black", fill="lightgray") +
+  labs(title = "Distribution of Length of Break Between Rides for an Active Driver", x="Length of Break (days)", y="Density")+
+  theme_minimal() +
+  geom_vline(aes(xintercept=(6/24), color="red"),
+             linetype="dashed") +
+  theme(legend.position = "none") +
+  annotate("text", x = 0.63, y = 11, label = "6 hours", size = 3)
+  
+ggsave(filename = "plots/first_driver_density.png", dpi = 400, width = 7.5, height = 4)
+
+#+
+ # coord_cartesian(xlim = c(0, 600)) 
+
+
+
+```
+6 hour cut off
+https://help.lyft.com/hc/en-us/articles/115012926787-Taking-breaks-and-time-limits-in-driver-mode
+
+
+```{r}
+driver_lengths %>% select(driver_id) %>% distinct() %>% dim
+```
+There are 837 drivers that we are analyzing.
+
+```{r}
+
+significant_time_between_sessions_set <- driver_lengths %>%
+  group_by(driver_id) %>% 
+  arrange(driver_id,time_from_employment_to_current_ride) %>% 
+  
+  mutate(time_between_sessions = time_from_employment_to_current_ride-lag(time_from_employment_to_current_ride)) %>% 
+  drop_na() %>%
+  
+  select(driver_id, time_between_sessions,last_event_time_for_ride) %>% 
+  arrange(driver_id,desc(last_event_time_for_ride)) %>% 
+  
+  dplyr::mutate(last_break = last_recorded_timestamp - dplyr::first(last_event_time_for_ride)) %>% 
+  
+  filter(time_between_sessions>360) %>% #only looking at breaks longer than 6 hours
+  mutate(mean = mean(time_between_sessions)) %>% 
+  mutate(sd = sd(time_between_sessions)) %>% 
+  mutate(size = n()) %>%
+  mutate(max_break = max(time_between_sessions)) %>% 
+  filter(last_break>mean+2*sd) %>% 
+  filter(last_break > max_break)
+  as_tibble()#only chose significant breaks
+# %>% 
+  # select(driver_id) %>% 
+  # distinct(driver_id)
+
+    # mutate(t=(mean-last_break)/(sd/sqrt(size))) %>% 
+  # mutate(p = 2*pt(t, size-1, lower=FALSE)) %>% 
+  # filter(p<0.05)
+
+
+
+  
+significant_time_between_sessions_set
+
+```
+
+```{r}
+list_of_quitters <- significant_time_between_sessions_set %>% select(driver_id) %>% distinct()
+list_of_quitters
+```
+
+
+```{r}
+library(lubridate)
+career_length_so_far <- driver_lengths %>% 
+  group_by(driver_id) %>% 
+  summarise(length = max(time_from_employment_to_current_ride)) %>% 
+  mutate(career_duration_so_far_in_days = as.numeric(length)/1440  ) %>% 
+  select(driver_id, career_duration_so_far_in_days)
+  
+career_length_so_far
+```
+
+
+```{r}
+list_of_all_drivers <- career_length_so_far %>% select(driver_id) %>% distinct()
+```
+
+
+```{r}
+
+distribution_of_career_lengths <- career_length_so_far %>% 
+  ggplot(aes(career_duration_so_far_in_days)) +
+  geom_histogram(binwidth=7)
+distribution_of_career_lengths
+```
+
+```{r}
+quitter_career_lengths <- left_join(list_of_quitters,career_length_so_far)
+quitter_career_lengths
+
+quitters_plot<- quitter_career_lengths %>% 
+  ggplot(aes(career_duration_so_far_in_days)) +
+  geom_histogram(binwidth=7)
+quitters_plot
+
+cat("number of quitters: ", dim(quitter_career_lengths)[1])
+```
+
+```{r}
+quit_avg <- quitter_career_lengths %>% ungroup() %>% summarise(mean_career_length_of_the_quitters = mean(career_duration_so_far_in_days))
+quit_avg
+```
+
+```{r}
+list_of_all_drivers[list_of_all_drivers$driver_id %in% list_of_quitters$driver_id, ]
+```
+
+#Driver attributes
+
+```{r}
+driver_attributes <- list_of_all_drivers %>% mutate(quit_within_90_days = ifelse(driver_id %in% list_of_quitters$driver_id,TRUE,FALSE))
+```
+
+```{r}
+driver_attributes
+
+```
+
+```{r}
+driver_attributes <- full_join(quitter_career_lengths,driver_attributes,by="driver_id") %>% 
+  rename (career_length_in_days = 2)
+driver_attributes
+write_csv(driver_attributes,"data/driver_attributes.csv")
+```
+

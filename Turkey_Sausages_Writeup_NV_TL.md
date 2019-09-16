@@ -15,7 +15,7 @@ Date: 15 September 2019
 
 ## Introduction
 
-Lyft's goal is optimize their operation by identifying the value of a driver and by determining which types of drivers are more valuable to the company. This report describes a method of using a set of data describing 937 San Francisco drivers who started driving with Lyft in the second quarter of 2016 and the rides they gave in that 90-day period to determine which drivers are quitting in the 90-day period as well as clustering the Lyft driver population into groups driven by their commitment to Lyft and their driving frequency. By segmenting the driver population, we can recommend strategies to target these clusters and increase their value to Lyft.
+Lyft's goal is optimize their operation by identifying the value of a driver and by determining which types of drivers are more valuable to the company. This report describes a method of using a set of data describing 937 San Francisco drivers who started driving with Lyft in the second quarter of 2016 and the rides they gave in that 90-day period to determine which drivers are quitting in the 90-day period as well as clustering the Lyft driver population into groups driven by their commitment to Lyft and their driving frequency. By segmenting the driver population, we can recommend strategies to target these clusters and increase their value to Lyft. We conclude that Lyft should offer incentivization programs starting at 50 rides and employee benefits to drivers that tend to quit within their first three months of driving.
 
 ## Driver Attributes
 

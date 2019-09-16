@@ -1,0 +1,212 @@
+---
+title: "60_Analyzing_Clusters"
+output: html_notebook
+---
+
+```{r setup}
+library(tidyverse)
+```
+
+```{r}
+full <- read_csv("data/full.csv", col_types = cols(timestamp = col_datetime(format = "%Y-%m-%d%.%H:%M:%S%.")))
+full
+
+driver_attributes <- read_csv("data/driver_attributes_complete.csv")
+driver_attributes
+
+cluster_assignments <- read_csv("data/cluster_assignments.csv", 
+    col_types = cols(cluster = col_factor(levels = c("1", 
+        "2", "3", "4"))))
+
+```
+
+```{r}
+driver_attributes <- left_join(driver_attributes,cluster_assignments,by="driver_id")
+driver_attributes
+```
+
+```{r}
+cluster_names <- c("High-volume Quitters","Low-volume Quitters","Hustlers","Long-term Part-timers")
+```
+
+
+```{r}
+summary_clusters <- driver_attributes %>% 
+  group_by(cluster) %>% 
+  summarise(
+    `Average Earnings per Ride (USD)` = round(mean(average_earnings_per_ride), 2),
+    
+    `Average Ride Distance (miles)` = round(mean(average_ride_distance) * 0.000621371, 2),
+    
+    `Average Ride Duration (mins)` = round(mean(average_ride_duration) / 60 , 2),
+    
+    `Average Eagerness` = round(mean(scaled_average_eagerness), 2),
+    
+    `Average Responsiveness` = round(mean(scaled_average_response_time_ranking), 2),
+    
+    `Average Number of Rides Given` = round(mean(number_of_rides_given), 2),
+    
+    `Average Prime Time Weighted by Ride Duration` = round(mean(average_prime_time_weighted_by_ride_duration), 2),
+    
+    `Size`= n(),
+    
+    `Number of Days Worked` = round(mean(number_of_days_worked),2),
+    
+    `Average Number of Rides Per Day Worked` = round(mean(rides_per_day_worked),2)
+  ) %>% 
+  cbind(cluster_names) %>% 
+  select(`Cluster Name` = cluster_names, 2:11)
+  
+summary_clusters
+```
+
+```{r}
+write_csv(summary_clusters, path = "data/summary_clusters.csv")
+```
+
+# T-tests between the Husters and the Part-timers
+
+Trying to see which variabes are statistically significant between the two non-quitter clusters
+
+## average earnings
+
+```{r}
+variable <- "earnings"
+earnings <- driver_attributes %>% 
+  filter(cluster == 3 | cluster == 4) %>% 
+  group_by(cluster) %>% 
+  select(average_earnings_per_ride) %>% 
+  group_split()
+
+p <- t.test(earnings[[1]]$average_earnings_per_ride,earnings[[2]]$average_earnings_per_ride)$p.value 
+
+if(p < 0.05) {
+  print(paste0(variable, " is significant"))
+}
+```
+
+## ride distance
+
+```{r}
+variable <- "ride distance"
+
+distance <- driver_attributes %>% 
+  filter(cluster == 3 | cluster == 4) %>% 
+  group_by(cluster) %>% 
+  select(average_ride_distance) %>% 
+  group_split()
+
+p <- t.test(distance[[1]]$average_ride_distance,distance[[2]]$average_ride_distance)$p.value 
+
+if(p < 0.05) {
+  print(paste0(variable, " is significant"))
+}
+```
+
+
+## ride duration
+
+```{r}
+variable <- "ride duration"
+
+duration <- driver_attributes %>% 
+  filter(cluster == 3 | cluster == 4) %>% 
+  group_by(cluster) %>% 
+  select(average_ride_duration) %>% 
+  group_split()
+
+p <- t.test(duration[[1]]$average_ride_duration,duration[[2]]$average_ride_duration)$p.value
+
+if(p < 0.05) {
+  print(paste0(variable, " is significant"))
+} else {
+  print(paste0(variable, " is NOT significant"))
+}
+```
+
+## number of rides
+
+```{r}
+variable <- "number of rides"
+
+num <- driver_attributes %>% 
+  filter(cluster == 3 | cluster == 4) %>% 
+  group_by(cluster) %>% 
+  select(number_of_rides_given) %>% 
+  group_split()
+
+p <- t.test(num[[1]]$number_of_rides_given,num[[2]]$number_of_rides_given)$p.value
+
+if(p < 0.05) {
+  print(paste0(variable, " is significant"))
+} else {
+  print(paste0(variable, " is NOT significant"))
+}
+```
+
+## rides per day
+
+```{r}
+variable <- "number of rides per day worked"
+
+num <- driver_attributes %>% 
+  filter(cluster == 3 | cluster == 4) %>% 
+  group_by(cluster) %>% 
+  select(rides_per_day_worked) %>% 
+  group_split()
+
+p <- t.test(num[[1]]$rides_per_day_worked,num[[2]]$rides_per_day_worked)$p.value
+
+if(p < 0.05) {
+  print(paste0(variable, " is significant"))
+} else {
+  print(paste0(variable, " is NOT significant"))
+}
+```
+
+# Driver Distribution
+```{r}
+driver_attributes %>% 
+  ggplot(aes(x="", fill=cluster)) + geom_bar(width = 1) + coord_polar("y", start=0) +
+  theme_minimal()
+```
+
+# Average Earnings Per Day for Non quitters
+```{r}
+full %>% 
+  left_join(driver_attributes, by = "driver_id") %>% 
+  filter(quit_within_90_days == F) %>% 
+  select(driver_id, ride_id, driver_earnings) %>% 
+  distinct() %>% 
+  group_by(driver_id) %>% 
+  summarise(total_earnings = sum(driver_earnings)) %>% 
+  summarise(mean(total_earnings))
+```
+
+```{r}
+3632.63/90
+```
+
+
+#Average Earnings per day in career for quitters
+```{r}
+driver_attributes %>% 
+  filter(quit_within_90_days == T) %>% 
+  select(driver_id,career_length_in_days,average_earnings_per_ride, number_of_rides_given, cluster) %>% 
+  mutate(total_earnings = number_of_rides_given * average_earnings_per_ride) %>% 
+  mutate(average_earnings_per_day_in_career = total_earnings/career_length_in_days) %>% 
+  group_by(cluster) %>% 
+  summarise(mean(average_earnings_per_day_in_career))
+```
+
+# Average 90 day earnings by cluster (for nonquitters)
+
+```{r}
+driver_attributes %>% 
+  filter(quit_within_90_days == F) %>% 
+  select(driver_id,average_earnings_per_ride, number_of_rides_given, cluster) %>% 
+  mutate(total_earnings = number_of_rides_given * average_earnings_per_ride) %>% 
+  group_by(cluster) %>% 
+  summarise(`three-month-total` = mean(total_earnings)) %>% 
+  mutate(daily_earnings = `three-month-total` / 90)
+```

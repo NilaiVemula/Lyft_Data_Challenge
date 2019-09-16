@@ -1,0 +1,118 @@
+---
+title: "50_Analyzing_Quitters"
+output: html_notebook
+---
+We can analyze quitters using the attributes we established before.
+Lifetime value can be calculated because we know how long these drivers drove for, so we know their entire lifetime.
+
+# Import Libraries
+```{r}
+require(tidyverse)
+```
+
+# Import Data
+```{r}
+full <- read_csv("data/full.csv", col_types = cols(timestamp = col_datetime(format = "%Y-%m-%d%.%H:%M:%S%.")))
+full
+
+driver_attributes <- read_csv("data/driver_attributes_complete.csv")
+driver_attributes
+```
+
+```{r}
+quitter_attributes <- driver_attributes %>% 
+  filter(quit_within_90_days == T) %>% 
+  select(-quit_within_90_days) %>% 
+  mutate(lifetime_earnings = number_of_rides_given * average_earnings_per_ride)
+  
+quitter_attributes
+```
+
+```{r}
+average_quitter_earnings <- quitter_attributes %>% 
+  summarise(`Average Lifetime Value of Quitters (USD)` = round(mean(lifetime_earnings),2))
+average_quitter_earnings
+```
+
+```{r}
+quitter_attributes %>%
+  summarise(
+    `Average Earnings per Ride (USD)` = round(mean(average_earnings_per_ride), 2),
+    
+    `Average Ride Distance (miles)` = round(mean(average_ride_distance) * 0.000621371, 2),
+    
+    `Average Ride Duration (mins)` = round(mean(average_ride_duration) / 60 , 2),
+    
+    `Average Eagerness` = round(mean(scaled_average_eagerness), 2),
+    
+    `Average Responsiveness` = round(mean(scaled_average_response_time_ranking), 2),
+    
+    `Number of Rides Given` = round(mean(number_of_rides_given), 2),
+    
+    `Average Prime Time Weighted by Ride Duration` = round(mean(average_prime_time_weighted_by_ride_duration), 2),
+    
+    `Career Length (days)` = round(mean(career_length_in_days), 2)
+  )
+```
+
+# Analyze Quitter Cluster
+
+```{r}
+require(readr)
+cluster_assignments <- read_csv("data/cluster_assignments.csv", 
+    col_types = cols(cluster = col_factor(levels = c("1", 
+        "2", "3", "4"))))
+quitter_attributes <- left_join(quitter_attributes,cluster_assignments,by="driver_id")
+
+quitter_attributes
+```
+
+```{r}
+quitter_attributes %>% 
+  group_by(cluster) %>% 
+  summarise(
+    `Average Earnings per Ride (USD)` = round(mean(average_earnings_per_ride), 2),
+    
+    `Average Ride Distance (miles)` = round(mean(average_ride_distance) * 0.000621371, 2),
+    
+    `Average Ride Duration (mins)` = round(mean(average_ride_duration) / 60 , 2),
+    
+    `Average Eagerness` = round(mean(scaled_average_eagerness), 2),
+    
+    `Average Responsiveness` = round(mean(scaled_average_response_time_ranking), 2),
+    
+    `Number of Rides Given` = round(mean(number_of_rides_given), 2),
+    
+    `Average Prime Time Weighted by Ride Duration` = round(mean(average_prime_time_weighted_by_ride_duration), 2),
+    
+    `Career Length (days)` = round(mean(career_length_in_days), 2),
+    
+    `Size`= n(),
+    
+    `Number of Days Worked` = round(mean(number_of_days_worked),2),
+    
+    `Average Number of Rides Per Day Worked` = round(mean(rides_per_day_worked))
+  )
+```
+
+```{r}
+
+quitter_attributes %>% 
+  group_by(cluster) %>%
+  ggplot(mapping = aes(x = career_length_in_days, y = number_of_rides_given, color = cluster)) +
+  geom_point() +
+  scale_color_manual(name="Cluster",
+                         breaks=c("1", "2"),
+                         labels=c("1: High-volume Quitters", "2: Low-volume Quitters"),
+                     values = c("#00BFC4","#C77CFF")) +
+  geom_hline(yintercept = 43, color="red",
+             linetype="dashed") +
+  annotate("text",x = 80, y = 65, label = "43 rides", size = 3) +
+  
+
+  labs(title = "Number of Rides Given v. Career Length for Quitters", x = "Career Length (days)", y = "Number of Rides Given") +
+  theme_minimal() +
+  theme(axis.text.y = element_text(hjust = 1.4))
+ggsave(filename = "plots/num_rides_vs_quitter_career_length.png", dpi = 400, width = 7.5, height = 4)
+```
+

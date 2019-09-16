@@ -1,5 +1,5 @@
 Cluster Name,Average Earnings per Ride (USD),Average Ride Distance (miles),Average Ride Duration (mins),Average Eagerness,Average Responsiveness,Average Number of Rides Given,Average Prime Time Weighted by Ride Duration,Size,Number of Days Worked,Average Number of Rides Per Day Worked
-High-volume Quitters,13.6,4.22,14.49,0.69,0.66,335.43,19.42,61,40.95,9
-Low-volume Quitters,13.56,4.57,14.04,0.67,0.67,43.07,14.97,198,10.75,5
-Hustlers,13.49,4.28,14.3,0.68,0.69,341.57,17.71,436,45.29,8
-Long-term Part-timers,14.23,5.09,14.73,0.63,0.65,44.33,14.07,142,13.18,4
+High-volume Quitters,13.6,4.22,14.49,0.69,0.66,335.43,19.42,61,40.95,8.51
+Low-volume Quitters,13.56,4.57,14.04,0.67,0.67,43.07,14.97,198,10.75,4.65
+Hustlers,13.49,4.28,14.3,0.68,0.69,341.57,17.71,436,45.29,7.62
+Long-term Part-timers,14.23,5.09,14.73,0.63,0.65,44.33,14.07,142,13.18,3.88

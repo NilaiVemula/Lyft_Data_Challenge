@@ -52,7 +52,7 @@ summary_clusters <- driver_attributes %>%
     
     `Number of Days Worked` = round(mean(number_of_days_worked),2),
     
-    `Average Number of Rides Per Day Worked` = round(mean(rides_per_day_worked))
+    `Average Number of Rides Per Day Worked` = round(mean(rides_per_day_worked),2)
   ) %>% 
   cbind(cluster_names) %>% 
   select(`Cluster Name` = cluster_names, 2:11)
@@ -164,7 +164,7 @@ if(p < 0.05) {
 }
 ```
 
-# Earnings Distribution
+# Driver Distribution
 ```{r}
 driver_attributes %>% 
   ggplot(aes(x="", fill=cluster)) + geom_bar(width = 1) + coord_polar("y", start=0) +
@@ -183,3 +183,30 @@ full %>%
   summarise(mean(total_earnings))
 ```
 
+```{r}
+3632.63/90
+```
+
+
+#Average Earnings per day in career for quitters
+```{r}
+driver_attributes %>% 
+  filter(quit_within_90_days == T) %>% 
+  select(driver_id,career_length_in_days,average_earnings_per_ride, number_of_rides_given, cluster) %>% 
+  mutate(total_earnings = number_of_rides_given * average_earnings_per_ride) %>% 
+  mutate(average_earnings_per_day_in_career = total_earnings/career_length_in_days) %>% 
+  group_by(cluster) %>% 
+  summarise(mean(average_earnings_per_day_in_career))
+```
+
+# Average 90 day earnings by cluster (for nonquitters)
+
+```{r}
+driver_attributes %>% 
+  filter(quit_within_90_days == F) %>% 
+  select(driver_id,average_earnings_per_ride, number_of_rides_given, cluster) %>% 
+  mutate(total_earnings = number_of_rides_given * average_earnings_per_ride) %>% 
+  group_by(cluster) %>% 
+  summarise(`three-month-total` = mean(total_earnings)) %>% 
+  mutate(daily_earnings = `three-month-total` / 90)
+```

@@ -1,0 +1,163 @@
+---
+title: "10_Importing_Data"
+output:
+  html_document:
+    df_print: paged
+---
+
+# Import Libraries
+`tidyverse` is a collection of packages for R designed with a consistent methodology.
+
+```{r setup}
+require(tidyverse)
+```
+
+# Import Dataset
+`readr` is used to import the datasets. Take note of the datetime format and the factor levels for events
+```{r import data files}
+driver_ids <- read_csv("data/driver_ids.csv", 
+    col_types = cols(driver_onboard_date = col_datetime(format = "%Y-%m-%d %H:%M:%S")))
+
+ride_ids <- read_csv("data/ride_ids.csv", 
+    col_types = cols(driver_id = col_character(), 
+        ride_distance = col_double(), ride_duration = col_double(), 
+        ride_id = col_character(), ride_prime_time = col_double()))
+
+ride_timestamps <- read_csv("data/ride_timestamps.csv", 
+    col_types = cols(event = col_factor(levels = c("requested_at", 
+        "accepted_at", "arrived_at", "picked_up_at", 
+        "dropped_off_at")), ride_id = col_character(), 
+        timestamp = col_datetime(format = "%Y-%m-%d %H:%M:%S")))
+```
+
+# Preview Data
+```{r}
+driver_ids
+```
+
+There are 937 drivers.
+
+```{r}
+ride_ids
+```
+
+There are 193,502 rides.
+
+```{r}
+ride_timestamps
+```
+looking at na timestamps:
+```{r}
+ride_timestamps %>% filter(is.na(timestamp))
+```
+filtering out na timestamps
+```{r}
+ride_timestamps <- ride_timestamps %>% filter(!is.na(timestamp))
+dim(ride_timestamps)
+```
+
+
+```{r}
+library(lubridate)
+last_timestamp <- ride_timestamps %>% drop_na()
+last_recorded_timestamp <- (max(last_timestamp$timestamp))
+last_recorded_timestamp
+
+first_recorded_timestamp <- (min(last_timestamp$timestamp))
+first_recorded_timestamp
+
+length_of_study <- last_recorded_timestamp-first_recorded_timestamp
+length_of_study
+
+```
+
+# Combine Data into full dataset
+
+```{r}
+dim(full_join(ride_timestamps, ride_ids, by="ride_id"))
+```
+```{r}
+dim(full_join(ride_timestamps, ride_ids, by="ride_id") %>% drop_na())
+```
+
+```{r}
+979087-924094
+# 8683 #na timestamp (rides in 2nd frame that you dont have time info for)
+# 46310 #na driver id (rides in 3rd frame that you don't have driver/ridedistance/duration/primetime)
+- 8683 - 46310
+```
+
+```{r}
+58126 - 54993
+```
+
+
+```{r}
+full_join(ride_timestamps, ride_ids, by="ride_id") %>% 
+    filter(is.na(driver_id))
+```
+```{r}
+ride_ids %>% 
+    filter(ride_id == "0000d9b24d8ccdd991b76258e616fa01")
+```
+This shows that there are some rides in the `ride_timestamps.csv` that when searched in `ride_ids.csv` do not show up. Lyft did not give us a complete set of rides in the `ride_ids.csv` file. 
+
+```{r}
+full <- full_join(ride_ids,ride_timestamps,by="ride_id") %>%  full_join(driver_ids,by="driver_id")
+full
+```
+
+
+```{r}
+full <- full %>% drop_na()
+full
+```
+
+Number of rows that were dropped:
+
+```{r}
+979170-921044 
+```
+
+
+## Calculating Ride Fare
+```{r}
+
+#defining constants
+MILES.PER.METER <- 0.000621371
+SECONDS.PER.MINUTE <- 60
+USD.PER.MILE <- 1.15
+USD.PER.MINUTE <- 0.22
+USD.SERVICE.FEE <- 1.75
+USD.BASE.FARE <- 2
+MIN.FARE <- 5
+MAX.FARE <- 400
+
+earnings <-
+    full %>% filter(event == "dropped_off_at") %>% select(ride_id, ride_distance, ride_duration, ride_prime_time) %>% mutate(unbound_driver_earnings = 
+                                                                                                                                 (
+                                                                                                                                     (
+        USD.BASE.FARE + 
+        USD.PER.MILE * ride_distance * MILES.PER.METER +
+        0.22 * (ride_duration /SECONDS.PER.MINUTE)
+                                                                                                                                     )
+        * ((100 + ride_prime_time) / 100) + 
+            USD.SERVICE.FEE 
+                                                                                                                                 )
+    ) %>% mutate(driver_earnings = ifelse(
+        unbound_driver_earnings < MIN.FARE,
+        MIN.FARE,
+        ifelse(unbound_driver_earnings > MAX.FARE, MAX.FARE, unbound_driver_earnings)
+    )) %>% select(ride_id, driver_earnings)
+
+earnings
+```
+
+```{r}
+full <- full_join(full, earnings, by="ride_id")
+dim(full)
+```
+
+```{r}
+write_csv(full, path = "data/full.csv")
+```

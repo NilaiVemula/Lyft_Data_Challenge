@@ -201,7 +201,7 @@ average_stats <- driver_attributes %>%
     
     `Number of Days Worked` = round(mean(number_of_days_worked),2),
     
-    `Average Number of Rides Per Day Worked` = round(mean(rides_per_day_worked))
+    `Average Number of Rides Per Day Worked` = round(mean(rides_per_day_worked),2)
   ) 
 
 average_stats
