@@ -33,7 +33,7 @@ To answer this question for every driver, we must know more about their driving 
 
 This data suggests that drivers often work in "sessions" ⁠— periods of hours at a time when they are continuously looking for rides. The large spike on the left corresponds to all the breaks a driver makes when searching for a new ride in a single session, which is usually on the order of minutes. The smaller peaks to the right represent the breaks between sessions. If a driver actually quit, then their last break should be considerably longer than other breaks between their driving sessions. 
 
-After looking at the break distributions for all the drivers, we determined the cutoff between the two types of breaks to be 5-6 hours. This is corroborated by Lyft's time limit policy, which prevents drivers from driving for longer than 14 hours at a time without taking an uninterrupted 6 hour break. [INSERT CITATION]
+After looking at the break distributions for all the drivers, we determined the cutoff between the two types of breaks to be 5-6 hours. This is corroborated by Lyft's time limit policy, which prevents drivers from driving for longer than 14 hours at a time without taking an uninterrupted 6 hour break. [1]
 
 We can now categorize each break longer than 6 hours as a "break between session." We considered the last break a driver took to be significant if it was: 
 
@@ -102,7 +102,9 @@ We recommend adding some type of incentive to drivers around the 50 ride mark to
 
 In addition, it was mentioned that we suspect High-Volume Quitters were able to find another job, thus causing them to quit driving. To mitigate this, one possibility is to make Lyft driving more similar to a traditional job and treating them like valuable  employees rather than contractors. One example of a benefit that would greatly improve driver retention is to offer a 401k matching program with a long vesting schedule. However, we recognize that more data is needed in order to perform a cost-benefit analysis of such decisions.
 
+## Citations
 
+1. https://help.lyft.com/hc/en-us/articles/115012926787-Taking-breaks-and-time-limits-in-driver-mode
 
 
 
