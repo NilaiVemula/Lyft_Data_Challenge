@@ -9,9 +9,13 @@ date: 9-15-2019
 # Lyft Data Challenge Report
 Team Name: Turkey Sausages
 
-## Statement of Problem
+Authors: Nilai Vemula and Terry Luo
 
+Date: 15 September 2019
 
+## Introduction
+
+Lyft's goal is optimize their operation by identifying the value of a driver and by determining which types of drivers are more valuable to the company. This report describes a method of using a set of data describing 937 San Francisco drivers who started driving with Lyft in the second quarter of 2016 and the rides they gave in that 90-day period to determine which drivers are quitting in the 90-day period as well as clustering the Lyft driver population into groups driven by their commitment to Lyft and their driving frequency. By segmenting the driver population, we can recommend strategies to target these clusters and increase their value to Lyft.
 
 ## Driver Attributes
 
@@ -23,9 +27,9 @@ We first noted the last timestamp given in the datasets: `2016-06-27 00:50:50 PD
 
 To answer this question for every driver, we must know more about their driving habits. Do they consistently drive every day or do they tend to take longer breaks? After calculating the difference in time for every ride a driver made, it is clear that there are two types of breaks. Fig.1 is a density plot displaying the distribution of breaks for a sample driver: 
 
-![Driver Density Plot](plots/first_driver_density.png){#fig:1 width=7in}
+![Driver Density Plot](plots/first_driver_density.png)
 
-[figure legend - driver id = "002be0ffdc997bd5c50703158b7c2491"]
+*Fig. 1*: The distribution of the length of breaks between rides for driver "002be0ffdc997bd5c50703158b7c2491." The red line delineates breaks inside a driving session from breaks between driving sessions.
 
 This data suggests that drivers often work in "sessions" ⁠— periods of hours at a time when they are continuously looking for rides. The large spike on the left corresponds to all the breaks a driver makes when searching for a new ride in a single session, which is usually on the order of minutes. The smaller peaks to the right represent the breaks between sessions. If a driver actually quit, then their last break should be considerably longer than other breaks between their driving sessions. 
 
