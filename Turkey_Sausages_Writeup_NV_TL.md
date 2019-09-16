@@ -78,9 +78,9 @@ It is important to note our clustering methodology was unsupervised, meaning we 
 
 Note: The cluster naming was done after all analysis was completed and the quitting attribute was merged into the cluster name - all clusters were homogenous in quitters or non-quitters.
 
-We have shown that not all drivers act alike, but it is necessary to determine if these results in differential value for Lyft. The Hustlers clearly make the most total revenue for Lyft, but that is simply due to the volume of rides they give and their commitment to driving in the long-term, making this point rather uninteresting. So, let us consider earnings when the number of rides is controlled for. In this case, Long-term Part-timers stand out. They make $0.59 more than the average driver per ride. One explanation for this is their speed. By using average ride duration and distance, we found that that long-term part timers drove at an average speed of 20.73 mph, compared to 18.72 mph of the average driver. Essentially, these drivers are making more money per ride by choosing slightly longer rides and driving a little faster. 
+We have shown that not all drivers act alike, but it is necessary to determine if this results in differential value for Lyft. The Hustlers clearly make the most total revenue for Lyft, but that is simply due to the high volume of rides they give and their commitment to driving in the long-term, making this point rather uninteresting. So, let us consider earnings when the number of rides is controlled for. In this case, Long-term Part-timers stand out. They make $0.59 more than the average driver per ride. One explanation for this is their speed. By using average ride duration and distance, we found that that Long-term Part timers drove at an average speed of 20.73 mph, compared to 18.72 mph of the average driver. Essentially, these drivers are making more money per ride by choosing slightly longer rides and driving a little faster. 
 
-Another group to note is the High-Volume Quitters, who have average the highest weighted Prime Time per ride.  We believe this group is also very important. Although these drivers make close to the average earnings per ride, their willingness to drive more during Prime Time is beneficial towards Lyft as a company. In general, if rides in an area are subject to Prime Time pricing, then there are a lot of riders compared to drivers in Lyft and other competitors such as Uber. This is a common situation where a rider will compare prices between Uber and Lyft and choose the lower price. Having more drivers available during busy hours is crucial in controlling more of the market by increasing supply. 
+Another group to note is the High-Volume Quitters, who average the highest weighted Prime Time per ride.  We believe this group is also very important. Although these drivers make close to the average earnings per ride, their willingness to drive more during Prime Time is beneficial towards Lyft as a company. In general, if rides in an area are subject to Prime Time pricing, then there are a lot of riders compared to drivers in Lyft and other competitors such as Uber. This is a common situation where a rider will compare prices between Uber and Lyft and choose the lower price. Having more drivers available during busy hours is crucial in controlling more of the market by increasing supply. 
 
 That leaves just the Low-volume Quitters. Looking at the two clusters of quitters by themselves yields more surprising results. Here, the number of rides given by the quitters is plotted against career length.
 
@@ -96,4 +96,13 @@ For non-quitters, lifetime value is a function of career length. On average, dri
 
 ## Business Recommendations 
 
-One of the best ways to increase a driver's value towards Lyft is stopping a driver from quitting. We recommend adding some type of incentive to drivers around the 50 ride mark to encourage low-volume quitters to keep driving. Since quitting after around 40 rides is extremely common, we believe this is a great way to specifically target a group that has the potential to generate a lot more value. 
+One of the best ways to increase a driver's value towards Lyft is stopping a driver from quitting. If we are able to turn drivers that quit early into regular drivers - not only does Lyft make more money, but also minimizes further onboarding costs. 
+
+We recommend adding some type of incentive to drivers around the 50 ride mark to encourage low-volume quitters to keep driving. Since quitting after around 40 rides is extremely common, we believe this is a great way to specifically target a group that has the potential to generate a lot more value.
+
+In addition, it was mentioned that we suspect High-Volume Quitters were able to find another job, thus causing them to quit driving. To mitigate this, one possibility is to make Lyft driving more similar to a traditional job and treating them like valuable  employees rather than contractors. One example of a benefit that would greatly improve driver retention is to offer a 401k matching program with a long vesting schedule. However, we recognize that more data is needed in order to perform a cost-benefit analysis of such decisions.
+
+
+
+
+
